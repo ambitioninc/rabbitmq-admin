@@ -14,6 +14,7 @@ class AdminAPITests(TestCase):
 
         docker run -d \
             -h rabbit1 \
+            -p 5672:5672 \
             -p 15672:15672 \
             -e RABBITMQ_DEFAULT_USER=guest \
             -e RABBITMQ_DEFAULT_PASS=guest \
@@ -28,9 +29,9 @@ class AdminAPITests(TestCase):
         One-time set up that connects as 'guest', creates a 'test_queue' and
         sends one message
         """
-        if os.environ.get('TRAVIS'):
+        if os.environ.get('TRAVIS'):  # pragma: no cover
             cls.host = '127.0.0.1'
-        else:
+        else:  # pragma: no cover
             cls.host = os.environ.get('RABBITMQ_HOST', '192.168.99.101')
 
         credentials = pika.PlainCredentials('guest', 'guest')
@@ -80,7 +81,7 @@ class AdminAPITests(TestCase):
     def test_list_extensions(self):
         self.assertEqual(
             self.api.list_extensions(),
-            [{'javascript': 'visualiser.js'}, {'javascript': 'dispatcher.js'}]
+            [{'javascript': 'dispatcher.js'}]
         )
 
     def test_list_connections(self):

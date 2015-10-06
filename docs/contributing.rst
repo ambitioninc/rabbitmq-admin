@@ -18,6 +18,7 @@ docker installed, and run a container like this ::
 
     $ docker run -d \
         -h rabbit1 \
+        -p 5672:5672 \
         -p 15672:15672 \
         -e RABBITMQ_DEFAULT_USER=guest \
         -e RABBITMQ_DEFAULT_PASS=guest \
