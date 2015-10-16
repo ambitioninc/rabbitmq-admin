@@ -3,6 +3,7 @@ from unittest import TestCase
 
 import pika
 import requests
+from requests import HTTPError
 
 from rabbitmq_admin.api import AdminAPI
 
@@ -28,15 +29,26 @@ class AdminAPITests(TestCase):
         """
         One-time set up that connects as 'guest', creates a 'test_queue' and
         sends one message
+
+        TravisCI sometimes turns on RabbitMQ when we don't want it, so we use
+        alternative ports 5673 and 15673
         """
         if os.environ.get('TRAVIS'):  # pragma: no cover
             cls.host = '127.0.0.1'
+            cls.amqp_port = 5673
+            cls.admin_port = 15673
         else:  # pragma: no cover
-            cls.host = os.environ.get('RABBITMQ_HOST', '192.168.99.101')
+            cls.host = os.environ.get('RABBITMQ_HOST', '192.168.99.100')
+            cls.amqp_port = 5672
+            cls.admin_port = 15672
 
         credentials = pika.PlainCredentials('guest', 'guest')
         cls.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(cls.host, credentials=credentials),
+            pika.ConnectionParameters(
+                cls.host,
+                port=cls.amqp_port,
+                credentials=credentials
+            ),
         )
         channel = cls.connection.channel()
         channel.queue_declare(queue='test_queue')
@@ -52,7 +64,7 @@ class AdminAPITests(TestCase):
     def setUp(self):
         super(AdminAPITests, self).setUp()
 
-        url = 'http://{host}:15672'.format(host=self.host)
+        url = 'http://{host}:{port}'.format(host=self.host, port=self.admin_port)
 
         self.api = AdminAPI(url, auth=('guest', 'guest'))
         self.node_name = 'rabbit@rabbit1'
@@ -83,6 +95,15 @@ class AdminAPITests(TestCase):
             self.api.list_extensions(),
             [{'javascript': 'dispatcher.js'}]
         )
+
+    def test_get_definitions(self):
+        response = self.api.get_definitions()
+        self.assertEqual(len(response['users']), 1)
+        self.assertEqual(len(response['vhosts']), 1)
+
+    def test_post_definitions(self):
+        response = self.api.get_definitions()
+        self.api.post_definitions(response)
 
     def test_list_connections(self):
         self.assertEqual(
@@ -377,6 +398,37 @@ class AdminAPITests(TestCase):
         # delete test user/vhost
         self.api.delete_user(uname)
         self.api.delete_vhost(vname)
+
+    def test_policies(self):
+        # Create a policy
+        self.api.create_policy_for_vhost(
+            vhost="/",
+            name="ha-all",
+            definition={"ha-mode": "all"},
+            pattern="",
+            apply_to="all",
+        )
+
+        list_all_response = self.api.list_policies()
+        list_default_response = self.api.list_policies_for_vhost("/")
+
+        self.assertEqual(list_all_response, list_default_response)
+        self.assertEqual(len(list_default_response), 1)
+
+        with self.assertRaises(HTTPError):
+            self.api.get_policy_for_vhost("/", "not-a-policy")
+
+        get_response = self.api.get_policy_for_vhost("/", "ha-all")
+        self.assertEqual(
+            get_response,
+            list_all_response[0]
+        )
+
+        self.api.delete_policy_for_vhost("/", "ha-all")
+        self.assertEqual(
+            len(self.api.list_policies()),
+            0
+        )
 
     def test_is_vhost_alive(self):
         self.assertDictEqual(

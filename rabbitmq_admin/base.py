@@ -1,5 +1,6 @@
 import json
 import requests
+from copy import deepcopy
 
 
 class Resource(object):
@@ -25,12 +26,25 @@ class Resource(object):
 
         .. _Requests' authentication: http://docs.python-requests.org/en/latest/user/authentication/
         """
-        self.url = url
+        self.url = url.rstrip('/')
         self.auth = auth
 
         self.headers = {
             'Content-type': 'application/json',
         }
+
+    def _api_get(self, url, **kwargs):
+        """
+        A convenience wrapper for _get. Adds headers, auth and base url by
+        default
+        """
+        kwargs['url'] = self.url + url
+        kwargs['auth'] = self.auth
+
+        headers = deepcopy(self.headers)
+        headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
+        return self._get(**kwargs)
 
     def _get(self, *args, **kwargs):
         """
@@ -45,6 +59,19 @@ class Resource(object):
 
         return response.json()
 
+    def _api_put(self, url, **kwargs):
+        """
+        A convenience wrapper for _put. Adds headers, auth and base url by
+        default
+        """
+        kwargs['url'] = self.url + url
+        kwargs['auth'] = self.auth
+
+        headers = deepcopy(self.headers)
+        headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
+        self._put(**kwargs)
+
     def _put(self, *args, **kwargs):
         """
         A wrapper for putting things. It will also json encode your 'data' parameter
@@ -57,6 +84,19 @@ class Resource(object):
         response = requests.put(*args, **kwargs)
         response.raise_for_status()
 
+    def _api_post(self, url, **kwargs):
+        """
+        A convenience wrapper for _post. Adds headers, auth and base url by
+        default
+        """
+        kwargs['url'] = self.url + url
+        kwargs['auth'] = self.auth
+
+        headers = deepcopy(self.headers)
+        headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
+        self._post(**kwargs)
+
     def _post(self, *args, **kwargs):
         """
         A wrapper for posting things. It will also json encode your 'data' parameter
@@ -68,6 +108,19 @@ class Resource(object):
             kwargs['data'] = json.dumps(kwargs['data'])
         response = requests.post(*args, **kwargs)
         response.raise_for_status()
+
+    def _api_delete(self, url, **kwargs):
+        """
+        A convenience wrapper for _delete. Adds headers, auth and base url by
+        default
+        """
+        kwargs['url'] = self.url + url
+        kwargs['auth'] = self.auth
+
+        headers = deepcopy(self.headers)
+        headers.update(kwargs.get('headers', {}))
+        kwargs['headers'] = headers
+        self._delete(**kwargs)
 
     def _delete(self, *args, **kwargs):
         """

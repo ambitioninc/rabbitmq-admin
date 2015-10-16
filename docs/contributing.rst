@@ -22,7 +22,7 @@ docker installed, and run a container like this ::
         -p 15672:15672 \
         -e RABBITMQ_DEFAULT_USER=guest \
         -e RABBITMQ_DEFAULT_PASS=guest \
-        -name rabbit1 \
+        --name rabbit1 \
         rabbitmq:3-management
 
 Then set the environment variable ``RABBITMQ_HOST`` to the IP of your docker
