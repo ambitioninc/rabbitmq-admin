@@ -22,30 +22,45 @@ class ResourceTests(TestCase):
         self.assertEqual(resource.headers, {'Content-type': 'application/json'})
 
     @patch.object(requests, 'put', autospec=True)
-    def test_put_no_data(self, mock_get):
+    def test_put_no_data(self, mock_put):
 
         mock_response = Mock()
-        mock_get.return_value = mock_response
+        mock_put.return_value = mock_response
 
         self.resource._put(self.url, auth=self.auth)
 
         mock_response.raise_for_status.assert_called_once_with()
 
+    @patch.object(Resource, '_post')
+    def test_api_post(self, mock_post):
+        url = '/api/definitions'
+        headers = {'k1': 'v1'}
+
+        self.resource._api_post(url, headers=headers)
+        mock_post.assert_called_once_with(
+            url=self.url + url,
+            auth=self.auth,
+            headers={
+                'k1': 'v1',
+                'Content-type': 'application/json'
+            }
+        )
+
     @patch.object(requests, 'post', autospec=True)
-    def test_post_no_data(self, mock_get):
+    def test_post_no_data(self, mock_post):
 
         mock_response = Mock()
-        mock_get.return_value = mock_response
+        mock_post.return_value = mock_response
 
         self.resource._post(self.url, auth=self.auth)
 
         mock_response.raise_for_status.assert_called_once_with()
 
     @patch.object(requests, 'post', autospec=True)
-    def test_post(self, mock_get):
+    def test_post(self, mock_post):
 
         mock_response = Mock()
-        mock_get.return_value = mock_response
+        mock_post.return_value = mock_response
 
         self.resource._post(self.url, auth=self.auth, data={'hello': 'world'})
 

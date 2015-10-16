@@ -36,7 +36,6 @@ Unsupported Management API endpoints
 This is a list of unsupported API endpoints. Please do not make issues for
 these, but pull requests implementing them are welcome.
 
-- ``/api/definitions [GET, POST]``
 - ``/api/exchanges/vhost/name/bindings/source [GET]``
 - ``/api/exchanges/vhost/name/bindings/destination [GET]``
 - ``/api/exchanges/vhost/name/publish [POST]``
@@ -52,9 +51,6 @@ these, but pull requests implementing them are welcome.
 - ``/api/parameters/component [GET]``
 - ``/api/parameters/component/vhost [GET]``
 - ``/api/parameters/component/vhost/name [GET, PUT, DELETE]``
-- ``/api/policies [GET]``
-- ``/api/policies/vhost [GET]``
-- ``/api/policies/vhost/name [GET, PUT, DELETE]``
 
 Installation
 ------------
