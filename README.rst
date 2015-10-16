@@ -1,8 +1,8 @@
-.. image:: https://travis-ci.org/ambitioninc/rabbitmq-admin.png
-   :target: https://travis-ci.org/ambitioninc/rabbitmq-admin
+.. image:: https://travis-ci.org/ambitioninc/rabbitmq-admin.svg?branch=master
+    :target: https://travis-ci.org/ambitioninc/rabbitmq-admin
 
-.. image:: https://coveralls.io/repos/ambitioninc/rabbitmq-admin/badge.png?branch=develop
-    :target: https://coveralls.io/r/ambitioninc/rabbitmq-admin?branch=develop
+.. image:: https://coveralls.io/repos/ambitioninc/rabbitmq-admin/badge.png?branch=master
+    :target: https://coveralls.io/r/ambitioninc/rabbitmq-admin?branch=master
 
 
 rabbitmq-admin
@@ -15,7 +15,7 @@ Example
 ::
 
     >>> from rabbitmq_admin import AdminAPI
-    >>> api = AdminAPI(url='http://192.168.99.101:15672', auth=('guest', 'guest'))
+    >>> api = AdminAPI(url='http://192.168.99.100:15672', auth=('guest', 'guest'))
     >>> api.create_vhost('second_vhost')
     >>> api.create_user('second_user', 'password')
     >>> api.create_user_permission('second_user', 'second_vhost')
