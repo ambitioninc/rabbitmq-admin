@@ -1,6 +1,5 @@
 import json
 import requests
-from copy import deepcopy
 
 
 class Resource(object):
@@ -34,12 +33,13 @@ class Resource(object):
             http://docs.python-requests.org/en/latest/user/advanced/#ssl-cert-verification
         """
         self.url = url.rstrip('/')
-        self.auth = auth
-        self.verify = verify
+        self.session = requests.Session()
+        self.session.auth = auth
+        self.session.verify = verify
 
-        self.headers = {
+        self.session.headers.update({
             'Content-type': 'application/json',
-        }
+        })
 
     def _api_get(self, url, **kwargs):
         """
@@ -47,12 +47,6 @@ class Resource(object):
         default
         """
         kwargs['url'] = self.url + url
-        kwargs['auth'] = self.auth
-        kwargs['verify'] = self.verify
-
-        headers = deepcopy(self.headers)
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
         return self._get(**kwargs)
 
     def _get(self, *args, **kwargs):
@@ -62,7 +56,7 @@ class Resource(object):
         :returns: The response of your get
         :rtype: dict
         """
-        response = requests.get(*args, **kwargs)
+        response = self.session.get(*args, **kwargs)
 
         response.raise_for_status()
 
@@ -74,12 +68,6 @@ class Resource(object):
         default
         """
         kwargs['url'] = self.url + url
-        kwargs['auth'] = self.auth
-        kwargs['verify'] = self.verify
-
-        headers = deepcopy(self.headers)
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
         self._put(**kwargs)
 
     def _put(self, *args, **kwargs):
@@ -91,7 +79,7 @@ class Resource(object):
         """
         if 'data' in kwargs:
             kwargs['data'] = json.dumps(kwargs['data'])
-        response = requests.put(*args, **kwargs)
+        response = self.session.put(*args, **kwargs)
         response.raise_for_status()
 
     def _api_post(self, url, **kwargs):
@@ -100,12 +88,6 @@ class Resource(object):
         default
         """
         kwargs['url'] = self.url + url
-        kwargs['auth'] = self.auth
-        kwargs['verify'] = self.verify
-
-        headers = deepcopy(self.headers)
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
         self._post(**kwargs)
 
     def _post(self, *args, **kwargs):
@@ -117,7 +99,7 @@ class Resource(object):
         """
         if 'data' in kwargs:
             kwargs['data'] = json.dumps(kwargs['data'])
-        response = requests.post(*args, **kwargs)
+        response = self.session.post(*args, **kwargs)
         response.raise_for_status()
 
     def _api_delete(self, url, **kwargs):
@@ -126,12 +108,6 @@ class Resource(object):
         default
         """
         kwargs['url'] = self.url + url
-        kwargs['auth'] = self.auth
-        kwargs['verify'] = self.verify
-
-        headers = deepcopy(self.headers)
-        headers.update(kwargs.get('headers', {}))
-        kwargs['headers'] = headers
         self._delete(**kwargs)
 
     def _delete(self, *args, **kwargs):
@@ -141,5 +117,5 @@ class Resource(object):
         :returns: The response of your delete
         :rtype: dict
         """
-        response = requests.delete(*args, **kwargs)
+        response = self.session.delete(*args, **kwargs)
         response.raise_for_status()

@@ -13,16 +13,20 @@ class ResourceTests(TestCase):
         self.auth = ('guest', 'guest')
         self.verify = True
 
-        self.resource = Resource(self.url, self.auth)
+        self.resource = Resource(self.url, self.auth, self.verify)
 
     def test_init(self):
-        resource = Resource(self.url, self.auth)
+        resource = Resource(self.url, self.auth, self.verify)
 
         self.assertEqual(resource.url, self.url)
-        self.assertEqual(resource.auth, self.auth)
-        self.assertEqual(resource.headers, {'Content-type': 'application/json'})
+        self.assertEqual(resource.session.auth, self.auth)
+        self.assertEqual(resource.session.verify, self.verify)
+        self.assertDictContainsSubset(
+            {'Content-type': 'application/json'},
+            resource.session.headers
+        )
 
-    @patch.object(requests, 'put', autospec=True)
+    @patch.object(requests.Session, 'put', autospec=True)
     def test_put_no_data(self, mock_put):
 
         mock_response = Mock()
@@ -40,15 +44,10 @@ class ResourceTests(TestCase):
         self.resource._api_post(url, headers=headers)
         mock_post.assert_called_once_with(
             url=self.url + url,
-            auth=self.auth,
-            headers={
-                'k1': 'v1',
-                'Content-type': 'application/json'
-            },
-            verify=self.verify,
+            headers={'k1': 'v1'}
         )
 
-    @patch.object(requests, 'post', autospec=True)
+    @patch.object(requests.Session, 'post', autospec=True)
     def test_post_no_data(self, mock_post):
 
         mock_response = Mock()
@@ -58,7 +57,7 @@ class ResourceTests(TestCase):
 
         mock_response.raise_for_status.assert_called_once_with()
 
-    @patch.object(requests, 'post', autospec=True)
+    @patch.object(requests.Session, 'post', autospec=True)
     def test_post(self, mock_post):
 
         mock_response = Mock()

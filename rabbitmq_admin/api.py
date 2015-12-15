@@ -17,11 +17,7 @@ class AdminAPI(Resource):
         """
         Name identifying this RabbitMQ cluster.
         """
-        return self._get(
-            url=self.url + '/api/cluster-name',
-            headers=self.headers,
-            auth=self.auth
-        )
+        return self._get(url=self.url + '/api/cluster-name')
 
     def list_nodes(self):
         """
