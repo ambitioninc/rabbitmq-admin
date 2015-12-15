@@ -11,6 +11,7 @@ class ResourceTests(TestCase):
     def setUp(self):
         self.url = 'http://127.0.0.1:15672'
         self.auth = ('guest', 'guest')
+        self.verify = True
 
         self.resource = Resource(self.url, self.auth)
 
@@ -43,7 +44,8 @@ class ResourceTests(TestCase):
             headers={
                 'k1': 'v1',
                 'Content-type': 'application/json'
-            }
+            },
+            verify=self.verify,
         )
 
     @patch.object(requests, 'post', autospec=True)

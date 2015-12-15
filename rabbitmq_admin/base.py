@@ -12,7 +12,7 @@ class Resource(object):
     # ```['GET', 'PUT', 'POST', 'DELETE']``"""
     # ALLOWED_METHODS = []
 
-    def __init__(self, url, auth):
+    def __init__(self, url, auth, verify=True):
         """
         :param url: The RabbitMQ API url to connect to. This should include the
             protocol and port number.
@@ -25,9 +25,17 @@ class Resource(object):
         :type auth: Requests auth
 
         .. _Requests' authentication: http://docs.python-requests.org/en/latest/user/authentication/
+
+        :param verify: How to verify SSL certificates used for HTTPS. See
+            `Requests' SSL verification`_ documentation.
+        :type verify: Requests verify
+
+        .. _Requests' SSL verification:
+            http://docs.python-requests.org/en/latest/user/advanced/#ssl-cert-verification
         """
         self.url = url.rstrip('/')
         self.auth = auth
+        self.verify = verify
 
         self.headers = {
             'Content-type': 'application/json',
@@ -40,6 +48,7 @@ class Resource(object):
         """
         kwargs['url'] = self.url + url
         kwargs['auth'] = self.auth
+        kwargs['verify'] = self.verify
 
         headers = deepcopy(self.headers)
         headers.update(kwargs.get('headers', {}))
@@ -66,6 +75,7 @@ class Resource(object):
         """
         kwargs['url'] = self.url + url
         kwargs['auth'] = self.auth
+        kwargs['verify'] = self.verify
 
         headers = deepcopy(self.headers)
         headers.update(kwargs.get('headers', {}))
@@ -91,6 +101,7 @@ class Resource(object):
         """
         kwargs['url'] = self.url + url
         kwargs['auth'] = self.auth
+        kwargs['verify'] = self.verify
 
         headers = deepcopy(self.headers)
         headers.update(kwargs.get('headers', {}))
@@ -116,6 +127,7 @@ class Resource(object):
         """
         kwargs['url'] = self.url + url
         kwargs['auth'] = self.auth
+        kwargs['verify'] = self.verify
 
         headers = deepcopy(self.headers)
         headers.update(kwargs.get('headers', {}))
