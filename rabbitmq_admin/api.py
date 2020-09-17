@@ -561,3 +561,97 @@ class AdminAPI(Resource):
         return self._api_get('/api/aliveness-test/{0}'.format(
             urllib.parse.quote_plus(vhost)
         ))
+
+    def create_queue_for_vhost(self, queue, vhost, body):
+        """
+        Create an individual queue.
+        The body should look like:
+        ::
+
+            {
+                "auto_delete":false,
+                "durable":true,
+                "arguments":{},
+                "node":"rabbit@rabbit1"
+            }
+
+        All keys are optional.
+
+        :param queue: The queue name
+        :type queue: str
+
+        :param vhost: The vhost name
+        :type vhost: str
+
+        :param body: A body for the queue.
+        :type body: dict
+        """
+        self._api_put(
+            '/api/queues/{0}/{1}'.format(
+                urllib.parse.quote_plus(vhost),
+                urllib.parse.quote_plus(queue)),
+            data=body
+        )
+
+    def get_queue_for_vhost(self, queue, vhost):
+        """
+        An individual queue
+
+        :param queue: The queue name
+        :type queue: str
+
+        :param vhost: The vhost name
+        :type vhost: str
+        """
+        return self._api_get('/api/queues/{0}/{1}'.format(
+            urllib.parse.quote_plus(vhost),
+            urllib.parse.quote_plus(queue)
+        ))
+
+    def list_queues(self):
+        """
+        A list of all queues.
+        """
+        return self._api_get('/api/queues')
+
+    def list_queues_for_vhost(self, vhost):
+        """
+        A list of all queues in a given virtual host.
+
+        :param vhost: The vhost name
+        :type vhost: str
+        """
+        return self._api_get('/api/queues/{0}'.format(
+            urllib.parse.quote_plus(vhost)
+        ))
+
+    def delete_queue_for_vhost(self, queue, vhost, if_unused=False, if_empty=False):
+        """
+        Delete an individual queue. You can add the parameter
+        ``if_unused=True``. This prevents the delete from succeeding if the
+        queue has consumers.
+
+        ``if_empty=True``. This prevents the delete from succeeding if the
+        queue contains messages.
+
+        :param queue: The queue name
+        :type queue: str
+
+        :param vhost: The vhost name
+        :type vhost: str
+
+        :param if_unused: Set to ``True`` to only delete if it is unused
+        :type if_unused: bool
+
+        :param if_empty: Set to ``True`` to only delete if it is empty
+        :type if_empty: bool
+        """
+        self._api_delete(
+            '/api/queues/{0}/{1}'.format(
+                urllib.parse.quote_plus(vhost),
+                urllib.parse.quote_plus(queue)),
+            params={
+                'if-unused': if_unused,
+                'if-empty': if_empty
+            },
+        )
