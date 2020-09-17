@@ -562,6 +562,52 @@ class AdminAPI(Resource):
             urllib.parse.quote_plus(vhost)
         ))
 
+    def create_queue_for_vhost(self, queue, vhost, body):
+        """
+        Create an individual queue.
+        The body should look like:
+        ::
+
+            {
+                "auto_delete":false,
+                "durable":true,
+                "arguments":{},
+                "node":"rabbit@smacmullen"
+            }
+
+        All keys are optional.
+
+        :param queue: The queue name
+        :type queue: str
+
+        :param vhost: The vhost name
+        :type vhost: str
+
+        :param body: A body for the exchange.
+        :type body: dict
+        """
+        self._api_put(
+            '/api/queues/{0}/{1}'.format(
+                urllib.parse.quote_plus(vhost),
+                urllib.parse.quote_plus(queue)),
+            data=body
+        )
+
+    def get_queue_for_vhost(self, queue, vhost):
+        """
+        An individual queue
+
+        :param queue: The queue name
+        :type exchange: str
+
+        :param vhost: The vhost name
+        :type vhost: str
+        """
+        return self._api_get('/api/queues/{0}/{1}'.format(
+            urllib.parse.quote_plus(vhost),
+            urllib.parse.quote_plus(queue)
+        ))
+
     def list_queues(self):
         """
         A list of all queues.
