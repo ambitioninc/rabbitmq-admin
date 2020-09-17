@@ -583,7 +583,7 @@ class AdminAPI(Resource):
         :param vhost: The vhost name
         :type vhost: str
 
-        :param body: A body for the exchange.
+        :param body: A body for the queue.
         :type body: dict
         """
         self._api_put(
@@ -598,7 +598,7 @@ class AdminAPI(Resource):
         An individual queue
 
         :param queue: The queue name
-        :type exchange: str
+        :type queue: str
 
         :param vhost: The vhost name
         :type vhost: str
@@ -635,7 +635,7 @@ class AdminAPI(Resource):
         queue contains messages.
 
         :param queue: The queue name
-        :type queues: str
+        :type queue: str
 
         :param vhost: The vhost name
         :type vhost: str
