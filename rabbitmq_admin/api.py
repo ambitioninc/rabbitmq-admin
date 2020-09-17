@@ -572,7 +572,7 @@ class AdminAPI(Resource):
                 "auto_delete":false,
                 "durable":true,
                 "arguments":{},
-                "node":"rabbit@smacmullen"
+                "node":"rabbit@rabbit1"
             }
 
         All keys are optional.
