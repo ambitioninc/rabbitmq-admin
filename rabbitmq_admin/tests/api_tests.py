@@ -163,13 +163,13 @@ class AdminAPITests(TestCase):
     def test_list_exchanges(self):
         self.assertEqual(
             len(self.api.list_exchanges()),
-            8
+            7
         )
 
     def test_list_exchanges_for_vhost(self):
         self.assertEqual(
             len(self.api.list_exchanges_for_vhost('/')),
-            8
+            7
         )
 
     def test_get_create_delete_exchange_for_vhost(self):
@@ -185,7 +185,7 @@ class AdminAPITests(TestCase):
         self.api.create_exchange_for_vhost(name, '/', body)
         self.assertEqual(
             len(self.api.list_exchanges_for_vhost('/')),
-            9
+            8
         )
         self.assertEqual(
             self.api.get_exchange_for_vhost(name, '/').get('name'),
@@ -195,7 +195,7 @@ class AdminAPITests(TestCase):
         self.api.delete_exchange_for_vhost(name, '/')
         self.assertEqual(
             len(self.api.list_exchanges_for_vhost('/')),
-            8
+            7
         )
 
     def test_list_bindings(self):
