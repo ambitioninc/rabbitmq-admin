@@ -4,6 +4,7 @@ from unittest import TestCase
 import pika
 import requests
 from requests import HTTPError
+import time
 
 from rabbitmq_admin.api import AdminAPI
 
@@ -56,6 +57,11 @@ class AdminAPITests(TestCase):
             exchange='',
             routing_key='test_queue',
             body='Test Message')
+        # It takes a while for rabbitmq-mgmt to detect new connection.
+        # Waiting a few seconds should be enough.
+        # See also test_list_connections code - it needed 3 seconds on local workstation.
+        time.sleep(5)
+
 
     @classmethod
     def tearDownClass(cls):
@@ -106,6 +112,13 @@ class AdminAPITests(TestCase):
         self.api.post_definitions(response)
 
     def test_list_connections(self):
+        if 0:
+            import sys
+            # sys.stderr.write(f"self.connection={self.connection}\n\n\n")
+            for ii in range(0, 10):
+                sys.stderr.write(f"NUM CON ={len(self.api.list_connections())}\n")
+                time.sleep(1)
+
         self.assertEqual(
             len(self.api.list_connections()),
             1
