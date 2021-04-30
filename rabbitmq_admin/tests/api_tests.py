@@ -62,7 +62,6 @@ class AdminAPITests(TestCase):
         # See also test_list_connections code - it needed 3 seconds on local workstation.
         time.sleep(5)
 
-
     @classmethod
     def tearDownClass(cls):
         cls.connection.close()
