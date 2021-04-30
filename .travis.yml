@@ -16,6 +16,10 @@ install:
   - pip install -e .[all]
 script:
   - flake8 .
+  # try to wait on rabbit1 to be up
+  - for ii in $(seq 1 120); do docker logs rabbit1 | grep 'Server startup complete'; RC=$?; if [ $RC -eq 0 ]; then echo "rabbit is up ii-$ii"; break; else echo "waiting ii-$ii"; fi; sleep 1; done
+  - for ii in $(seq 1 120); do curl http://guest:guest@127.0.0.1:15673/api/connections/ | grep '\[\]'; RC=$?; if [ $RC -eq 0 ]; then echo "rabbit-mgmt returned empty connection list ii-$ii"; break; else echo "waiting rabbit-mgmt empty connection list ii-$ii"; fi; sleep 1; done
+  - curl http://guest:guest@127.0.0.1:15673/api/connections/
   - python setup.py nosetests
   - coverage report
   - python setup.py build_sphinx
