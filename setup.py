@@ -16,6 +16,7 @@ def get_version():
     else:
         raise RuntimeError('Unable to find version string in {0}.'.format(VERSION_FILE))
 
+
 install_requires = [
     'requests>=2.7.0',
     'six>=1.8.0'
