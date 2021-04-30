@@ -98,7 +98,7 @@ class AdminAPI(Resource):
         :type name: str
         """
         return self._api_get('/api/connections/{0}'.format(
-            urllib.parse.quote_plus(name)
+            urllib.parse.quote(name)
         ))
 
     def delete_connection(self, name, reason=None):
@@ -128,7 +128,7 @@ class AdminAPI(Resource):
         :type name: str
         """
         return self._api_get('/api/connections/{0}/channels'.format(
-            urllib.parse.quote_plus(name)
+            urllib.parse.quote(name)
         ))
 
     def list_channels(self):
@@ -145,7 +145,7 @@ class AdminAPI(Resource):
         :type name: str
         """
         return self._api_get('/api/channels/{0}'.format(
-            urllib.parse.quote_plus(name)
+            urllib.parse.quote(name)
         ))
 
     def list_consumers(self):
