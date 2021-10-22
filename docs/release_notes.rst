@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v0.3
+----
+
+* Added support for topic permissions
+
 v0.2
 ----
 

@@ -98,7 +98,7 @@ class AdminAPI(Resource):
         :type name: str
         """
         return self._api_get('/api/connections/{0}'.format(
-            urllib.parse.quote_plus(name)
+            urllib.parse.quote(name)
         ))
 
     def delete_connection(self, name, reason=None):
@@ -115,7 +115,7 @@ class AdminAPI(Resource):
 
         self._api_delete(
             '/api/connections/{0}'.format(
-                urllib.parse.quote_plus(name)
+                urllib.parse.quote(name)
             ),
             headers=headers,
         )
@@ -128,7 +128,7 @@ class AdminAPI(Resource):
         :type name: str
         """
         return self._api_get('/api/connections/{0}/channels'.format(
-            urllib.parse.quote_plus(name)
+            urllib.parse.quote(name)
         ))
 
     def list_channels(self):
@@ -145,7 +145,7 @@ class AdminAPI(Resource):
         :type name: str
         """
         return self._api_get('/api/channels/{0}'.format(
-            urllib.parse.quote_plus(name)
+            urllib.parse.quote(name)
         ))
 
     def list_consumers(self):
@@ -561,3 +561,96 @@ class AdminAPI(Resource):
         return self._api_get('/api/aliveness-test/{0}'.format(
             urllib.parse.quote_plus(vhost)
         ))
+
+    def list_topic_permissions(self):
+        """
+        A list of all topic permissions for all users.
+        """
+        return self._api_get('/api/topic-permissions')
+
+    def list_vhost_topic_permissions(self, vhost):
+        """
+        A list of all topic permissions for a given virtual host.
+
+        :param vhost: The vhost name
+        :type vhost: str
+        """
+        return self._api_get('/api/vhosts/{0}/topic-permissions'.format(
+            urllib.parse.quote_plus(vhost)))
+
+    def list_user_topic_permissions(self, user):
+        """
+        A list of all topic permissions for a given user.
+
+        :param user: The user's name
+        :type user: str
+        """
+        return self._api_get('/api/users/{0}/topic-permissions'.format(
+            urllib.parse.quote_plus(user)))
+
+    def list_vhost_user_topic_permissions(self, vhost, user):
+        """
+        A set of topic permission of a user and virtual host.
+
+        :param vhost: The vhost name
+        :type vhost: str
+
+        :param user: The user's name
+        :type user: str
+        """
+        return self._api_get('/api/topic-permissions/{0}/{1}'.format(
+            urllib.parse.quote_plus(vhost), urllib.parse.quote_plus(user)))
+
+    def create_topic_permission(self,
+                                user,
+                                vhost,
+                                exchange,
+                                write='',
+                                read=''):
+        """
+        Create a topic permission. For the ``read`` and ``write`` topic permissions,
+        ``''`` is a synonym for ``'^$'`` and restricts permissions in the exact same way.
+
+        :param user: The user's name
+        :type user: str
+        :param vhost: The vhost to assign the permission to
+        :type vhost: str
+        :param exchange: The exchange name
+        :type exchange: str
+        :param write: A regex for the write permission. Default is ``''``
+        :type write: str
+        :param read: A regex for the read permission. Default is ``''``
+        :type read: str
+        """
+
+        data = {
+            "exchange": exchange,
+            "read": read,
+            "write": write,
+        }
+        return self._api_put(
+            '/api/topic-permissions/{0}/{1}'.format(
+                urllib.parse.quote_plus(vhost), urllib.parse.quote_plus(user)),
+            data=data,
+        )
+
+    def delete_topic_permission(self, user, vhost, exchange):
+        """
+        Delete an individual topic permission of a user, virtual host and exchange.
+
+        :param user: The user's name
+        :type user: str
+
+        :param vhost: The vhost name
+        :type vhost: str
+
+        :param exchange: The exchange name
+        :type exchange: str
+        """
+        self._api_delete(
+            '/api/topic-permissions/{0}/{1}/{2}'.format(
+                urllib.parse.quote_plus(vhost),
+                urllib.parse.quote_plus(user),
+                urllib.parse.quote_plus(exchange),
+            )
+        )
