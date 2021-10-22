@@ -1,4 +1,6 @@
 import os
+import time
+
 from unittest import TestCase
 
 import pika
@@ -19,7 +21,7 @@ class AdminAPITests(TestCase):
             -p 15672:15672 \
             -e RABBITMQ_DEFAULT_USER=guest \
             -e RABBITMQ_DEFAULT_PASS=guest \
-            -name rabbit1 \
+            --name rabbit1 \
             rabbitmq:3-management
 
     """
@@ -33,14 +35,10 @@ class AdminAPITests(TestCase):
         TravisCI sometimes turns on RabbitMQ when we don't want it, so we use
         alternative ports 5673 and 15673
         """
-        if os.environ.get('TRAVIS'):  # pragma: no cover
-            cls.host = '127.0.0.1'
-            cls.amqp_port = 5673
-            cls.admin_port = 15673
-        else:  # pragma: no cover
-            cls.host = os.environ.get('RABBITMQ_HOST', '192.168.99.100')
-            cls.amqp_port = 5672
-            cls.admin_port = 15672
+
+        cls.host = os.environ.get('RABBITMQ_HOST', '127.0.0.1')
+        cls.amqp_port = int(os.environ.get('RABBITMQ_AMQP_PORT', '5672'))
+        cls.admin_port = int(os.environ.get('RABBITMQ_ADMIN_PORT', '15672'))
 
         credentials = pika.PlainCredentials('guest', 'guest')
         cls.connection = pika.BlockingConnection(
@@ -56,6 +54,10 @@ class AdminAPITests(TestCase):
             exchange='',
             routing_key='test_queue',
             body='Test Message')
+        # It takes a while for rabbitmq-mgmt to detect new connection.
+        # Waiting a few seconds should be enough.
+        # See also test_list_connections code - it needed 3 seconds on local workstation.
+        time.sleep(5)
 
     @classmethod
     def tearDownClass(cls):
@@ -163,13 +165,13 @@ class AdminAPITests(TestCase):
     def test_list_exchanges(self):
         self.assertEqual(
             len(self.api.list_exchanges()),
-            8
+            7
         )
 
     def test_list_exchanges_for_vhost(self):
         self.assertEqual(
             len(self.api.list_exchanges_for_vhost('/')),
-            8
+            7
         )
 
     def test_get_create_delete_exchange_for_vhost(self):
@@ -185,7 +187,7 @@ class AdminAPITests(TestCase):
         self.api.create_exchange_for_vhost(name, '/', body)
         self.assertEqual(
             len(self.api.list_exchanges_for_vhost('/')),
-            9
+            8
         )
         self.assertEqual(
             self.api.get_exchange_for_vhost(name, '/').get('name'),
@@ -195,7 +197,7 @@ class AdminAPITests(TestCase):
         self.api.delete_exchange_for_vhost(name, '/')
         self.assertEqual(
             len(self.api.list_exchanges_for_vhost('/')),
-            8
+            7
         )
 
     def test_list_bindings(self):
@@ -287,7 +289,7 @@ class AdminAPITests(TestCase):
     def test_get_user(self):
         response = self.api.get_user('guest')
         self.assertEqual(response.get('name'), 'guest')
-        self.assertEqual(response.get('tags'), 'administrator')
+        self.assertEqual(response.get('tags'), ['administrator'])
 
     def test_create_delete_user(self):
         name = 'user2'
@@ -350,7 +352,7 @@ class AdminAPITests(TestCase):
     def test_whoami(self):
         self.assertEqual(
             self.api.whoami(),
-            {'name': 'guest', 'tags': 'administrator'}
+            {'name': 'guest', 'tags': ['administrator']}
         )
 
     def test_list_permissions(self):
@@ -435,3 +437,53 @@ class AdminAPITests(TestCase):
             self.api.is_vhost_alive('/'),
             {'status': 'ok'}
         )
+
+    def test_list_topic_permissions(self):
+        self.assertEqual(
+            self.api.list_topic_permissions(),
+            [],
+        )
+
+    def test_get_topic_permission(self):
+        with self.assertRaises(HTTPError):
+            self.api.list_vhost_user_topic_permissions("/", "guest")
+
+    def test_create_delete_topic_permission(self):
+        uname = "test_user"
+        vname = "test_vhost"
+        password_hash = "5f4dcc3b5aa765d61d8327deb882cf99"  # md5 of 'password'
+
+        # Create test user/vhost
+        self.api.create_user(uname, password="", password_hash=password_hash)
+        self.api.create_vhost(vname)
+
+        self.assertEqual(len(self.api.list_user_topic_permissions(uname)), 0)
+
+        # Create the permission
+        self.api.create_topic_permission(uname, vname, "amq.topic")
+
+        self.assertEqual(len(self.api.list_user_topic_permissions(uname)), 1)
+        self.assertEqual(len(self.api.list_vhost_topic_permissions(vname)), 1)
+        self.assertEqual(len(self.api.list_topic_permissions()), 1)
+
+        # Get the topic permission created
+        self.assertEqual(
+            self.api.list_vhost_user_topic_permissions(vname, uname),
+            [{
+                "user": uname,
+                "vhost": vname,
+                "exchange": "amq.topic",
+                "write": "",
+                "read": "",
+            }],
+        )
+
+        # Delete the permission
+        self.api.delete_topic_permission(uname, vname, "amq.topic")
+
+        self.assertEqual(len(self.api.list_user_topic_permissions(uname)), 0)
+        self.assertEqual(len(self.api.list_vhost_topic_permissions(vname)), 0)
+        self.assertEqual(len(self.api.list_topic_permissions()), 0)
+        # delete test user/vhost
+        self.api.delete_user(uname)
+        self.api.delete_vhost(vname)
