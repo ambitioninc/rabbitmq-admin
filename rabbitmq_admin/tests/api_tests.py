@@ -19,7 +19,7 @@ class AdminAPITests(TestCase):
             -p 15672:15672 \
             -e RABBITMQ_DEFAULT_USER=guest \
             -e RABBITMQ_DEFAULT_PASS=guest \
-            -name rabbit1 \
+            --name rabbit1 \
             rabbitmq:3-management
 
     """
@@ -434,4 +434,41 @@ class AdminAPITests(TestCase):
         self.assertDictEqual(
             self.api.is_vhost_alive('/'),
             {'status': 'ok'}
+        )
+
+    def test_list_queues(self):
+        self.assertEqual(
+            len(self.api.list_queues()),
+            0
+        )
+
+    def test_list_queues_for_vhost(self):
+        self.assertEqual(
+            len(self.api.list_queues_for_vhost('/')),
+            0
+        )
+
+    def test_get_create_delete_queue_for_vhost(self):
+        name = 'my_queue'
+        body = {
+            "auto_delete": False,
+            "durable": True,
+            "arguments": {},
+            "node": "rabbit@rabbit1"
+        }
+
+        self.api.create_queue_for_vhost(name, '/', body)
+        self.assertEqual(
+            len(self.api.list_queues_for_vhost('/')),
+            1
+        )
+        self.assertEqual(
+            self.api.get_queue_for_vhost(name, '/').get('name'),
+            name
+        )
+
+        self.api.delete_queue_for_vhost(name, '/')
+        self.assertEqual(
+            len(self.api.list_queues_for_vhost('/')),
+            0
         )
