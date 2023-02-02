@@ -275,7 +275,13 @@ class AdminAPI(Resource):
         A list of all vhosts.
         """
         return self._api_get('/api/vhosts')
-
+       
+    def list_feature_flags(self):
+        """
+        A list of all feature flags
+        """
+        return self._api_get('/api/feature-flags')
+    
     def get_vhost(self, name):
         """
         Details about an individual vhost.
